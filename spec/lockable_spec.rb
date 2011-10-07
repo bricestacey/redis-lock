@@ -7,7 +7,6 @@ describe RedisLock::Concern::Lockable do
   let(:locking_key)         { "lockable-locking-key" }
   let(:model) do
     class Foo
-      include ActiveSupport::Concern
       include RedisLock::Concern::Lockable
     end
   end
