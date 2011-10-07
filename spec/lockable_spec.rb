@@ -13,6 +13,33 @@ describe RedisLock::Concern::Lockable do
   let(:expected_return_value)   { mock('expected return value') }
 
   subject { model.new }
+  before(:each) { $redis = redis }
+
+  context "#find_or_create_lock with a $redis global variable" do
+    it "uses $redis" do
+      subject.find_or_create_lock(locking_key).instance_variable_get(:@redis).should eq(redis)
+    end
+  end
+
+  context "#find_or_create_lock with a @redis_lock_redis variable" do
+    before do
+      @redis = mock('redis')
+      subject.instance_variable_set(:@redis_lock_redis, @redis)
+    end
+
+    it "uses #redis_lock_redis" do
+      subject.find_or_create_lock(locking_key).instance_variable_get(:@redis).should eq(@redis)
+    end
+  end
+
+  context "#find_or_create_lock without anything" do
+    before do
+      $redis = nil
+    end
+    it "raises an error" do
+      expect { subject.find_or_create_lock(locking_key) }.to raise_exception(RedisLock::Concern::Lockable::RedisNotConfigured)
+    end
+  end
 
   context "#find_or_create_lock when no locker" do
     it "instantiates a locker" do
