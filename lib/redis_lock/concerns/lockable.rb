@@ -1,7 +1,7 @@
 require 'active_support/concern'
 
 class RedisLock
-  module Concerns
+  module Concern
     module Lockable
       extend ActiveSupport::Concern
 

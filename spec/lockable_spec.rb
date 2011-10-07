@@ -2,13 +2,13 @@ require "spec_helper"
 require "redis"
 require "redis_lock/concerns/lockable"
 
-describe RedisLock::Concerns::Lockable do
+describe RedisLock::Concern::Lockable do
   let(:redis)               { Redis.new }
   let(:locking_key)         { "lockable-locking-key" }
   let(:model) do
     class Foo
       include ActiveSupport::Concern
-      include RedisLock::Concerns::Lockable
+      include RedisLock::Concern::Lockable
     end
   end
   subject { model.new }
