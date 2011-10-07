@@ -14,7 +14,7 @@ describe RedisLock::Concern::Lockable do
 
   subject { model.new }
 
-  context ".find_or_create_lock when no locker" do
+  context "#find_or_create_lock when no locker" do
     it "instantiates a locker" do
       subject.instance_variable_get(:@redis_lock_locker).should eq(nil)
       subject.find_or_create_lock(locking_key)
