@@ -11,11 +11,14 @@ describe RedisLock::Concerns::Lockable do
       include RedisLock::Concerns::Lockable
     end
   end
-  let(:unlocked_subject)    { model.new }
+  subject { model.new }
+
+  before(:all) do 
+    RedisLock.any_instance.stubs(:lock)
+    RedisLock.any_instance.stubs(:unlock)
+  end
 
   context ".find_lock when no locker" do
-    subject { unlocked_subject }
-
     it "instantiates a locker" do
       subject.instance_variable_get(:@redis_lock_locker).should eq(nil)
       subject.find_lock(locking_key)
@@ -30,7 +33,6 @@ describe RedisLock::Concerns::Lockable do
   end
 
   context "#find_lock with a locker but no lock" do
-    subject { unlocked_subject }
     before  { subject.instance_variable_set(:@redis_lock_locker, {}) }
 
     it "adds a lock to the locker" do
@@ -41,7 +43,6 @@ describe RedisLock::Concerns::Lockable do
   end
 
   context "#find_lock with a locker and the lock" do
-    subject { unlocked_subject }
     before { subject.instance_variable_set(:@redis_lock_locker, {locking_key => RedisLock.new(redis, locking_key) }) }
 
     it "finds the lock" do
@@ -55,19 +56,13 @@ describe RedisLock::Concerns::Lockable do
   end
 
   context "#lock without a block" do
-    subject { unlocked_subject }
-
     it "calls #lock on the appropriate RedisLock" do
       subject.find_lock(locking_key).expects(:lock)
       subject.lock(locking_key)
     end
-
-    after { subject.unlock(locking_key) }
   end
 
   context "#lock when given a block" do
-    subject { unlocked_subject }
-    
     it "calls #lock on the appropriate RedisLock and passes the block" do
       foo = proc { "foo" }
       subject.find_lock(locking_key).expects(:lock_for_update).with(&foo)
@@ -79,8 +74,6 @@ describe RedisLock::Concerns::Lockable do
   end
 
   context "#unlock" do
-    subject { unlocked_subject }
-
     it "calls #unlock on the appropriate RedisLock" do
       subject.find_lock(locking_key).expects(:unlock)
       subject.unlock(locking_key)
