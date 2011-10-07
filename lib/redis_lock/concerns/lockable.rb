@@ -6,7 +6,7 @@ class RedisLock
       extend ActiveSupport::Concern
 
       # Finds the lock for the given `key`
-      def find_lock(key)
+      def find_or_create_lock(key)
         # If a locker doesn't exist, make one
         @redis_lock_locker ||= {}
 
@@ -15,7 +15,7 @@ class RedisLock
       end
 
       def lock(key, options = {})
-        locker = find_lock(key)
+        locker = find_or_create_lock(key)
 
         unless options.empty?
           locker.retry(options[:retry]) if options.keys.include? :retry
@@ -33,12 +33,12 @@ class RedisLock
       end
 
       def unlock(key)
-        locker = find_lock(key)
+        locker = find_or_create_lock(key)
         locker.unlock
       end
 
       def locked?(key)
-        locker = find_lock(key)
+        locker = find_or_create_lock(key)
         locker.locked?
       end
     end
