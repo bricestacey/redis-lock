@@ -14,8 +14,13 @@ class RedisLock
         @redis_lock_locker[key] ||= RedisLock.new(Redis.new, key)
       end
 
-      def lock(key)
+      def lock(key, options = {})
         locker = find_lock(key)
+
+        unless options.empty?
+          locker.retry(options[:retry]) if options.keys.include? :retry
+          locker.every(options[:every]) if options.keys.include? :every
+        end
 
         if block_given?
           locker.lock_for_update do

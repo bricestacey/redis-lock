@@ -13,7 +13,7 @@ describe RedisLock::Concerns::Lockable do
   end
   subject { model.new }
 
-  before(:all) do 
+  before(:each) do 
     RedisLock.any_instance.stubs(:lock)
     RedisLock.any_instance.stubs(:unlock)
   end
@@ -52,6 +52,30 @@ describe RedisLock::Concerns::Lockable do
 
     it "doesn't add another lock to the locker" do
       expect { subject.find_lock(locking_key) }.should_not change{subject.instance_variable_get(:@redis_lock_locker).count}
+    end
+  end
+
+  context "#lock with options" do
+    context "given a retry option" do
+      it "calls #retry on the appropriate lock" do
+        options = { retry: 5.times }
+        subject.find_lock(locking_key).expects(:retry).with(options[:retry])
+        subject.lock(locking_key, retry: options[:retry])
+      end
+    end
+    context "given an every option" do
+      it "calls #every on the appropriate lock" do
+        subject.find_lock(locking_key).expects(:every).with(5)
+        subject.lock(locking_key, every: 5)
+      end
+    end
+    context "given multiple options" do
+      it "calls #retry and #every for the appropriate lock" do
+        options = { retry: 5.times, every: 5 }
+        subject.find_lock(locking_key).expects(:every).with(options[:every])
+        subject.find_lock(locking_key).expects(:retry).with(options[:retry])
+        subject.lock(locking_key, retry: options[:retry], every: options[:every])
+      end
     end
   end
 
