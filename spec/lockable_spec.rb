@@ -103,4 +103,11 @@ describe RedisLock::Concern::Lockable do
       subject.unlock(locking_key)
     end
   end
+
+  context "#locked?" do
+    it "calls #locked? on the appropriate RedisLock" do
+      subject.find_lock(locking_key).expects(:locked?)
+      subject.locked?(locking_key)
+    end
+  end
 end

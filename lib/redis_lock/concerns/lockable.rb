@@ -36,6 +36,11 @@ class RedisLock
         locker = find_lock(key)
         locker.unlock
       end
+
+      def locked?(key)
+        locker = find_lock(key)
+        locker.locked?
+      end
     end
   end
 end
